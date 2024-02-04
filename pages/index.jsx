@@ -1,10 +1,24 @@
-import React from "react";
-import HomePage from "./HomePage";
 import Login from "../components/Login";
+import { React, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+
+const sessionExists = () => {
+  // Example: Check if a session key exists in localStorage
+  return localStorage.getItem("sessionKey") !== null;
+};
 
 export default function App() {
-  // You can use React state or routing to conditionally render components
-  const isLoggedIn = false; // Set this based on your authentication state
+  const router = useRouter();
 
-  return <>{isLoggedIn ? <HomePage /> : <Login />}</>;
+  const [token, setToken] = useState();
+
+  if (!token) {
+    return <Login setToken={setToken} />;
+  }
+  useEffect(() => {
+    // Check for session on the client-side
+    if (!sessionExists()) {
+      router.push("/LoginPage"); // Redirect to login page
+    } else router.push("/AddSetPage");
+  }, []);
 }

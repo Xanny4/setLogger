@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Container, Paper, Typography, TextField, Button } from "@mui/material";
+import { useRouter } from "next/router";
 
 const Login = () => {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -42,7 +45,6 @@ const Login = () => {
         });
         if (response.data.user) setSuccessMessage("Signed up successfully!");
         else setError(response.data.message);
-        console.log(response.data.message);
       } else {
         const response = await axios.post(
           "http://localhost:3000/api/users/authenticate",
@@ -57,7 +59,7 @@ const Login = () => {
         } else {
           setSuccessMessage("Login successful!");
           console.log("Login successful. User data:", user);
-          // Do something with the user data, e.g., store it in the state or redirect
+          router.push("/AddSetPage");
         }
       }
     } catch (error) {
@@ -226,5 +228,9 @@ const styles = {
     marginTop: "10px",
   },
 };
+
+// Login.propTypes = {
+//   setToken: PropTypes.func.isRequired,
+// };
 
 export default Login;

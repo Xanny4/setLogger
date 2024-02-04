@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Paper,
@@ -7,21 +7,39 @@ import {
   Button,
   Autocomplete,
   InputAdornment,
+  Avatar,
 } from "@mui/material";
+
+import axios from "axios";
 
 const AddSet = () => {
   const [reps, setReps] = useState("");
   const [weight, setWeight] = useState("");
   const [selectedExercise, setSelectedExercise] = useState(null);
-  const [exerciseOptions] = useState([
-    { id: "1", name: "Exercise A" },
-    { id: "2", name: "Exercise B" },
-    { id: "3", name: "Exercise C" },
-    // Add more exercises as needed
-  ]);
+  const [exerciseOptions, setExerciseOptions] = useState([]);
 
-  const handleAddSet = () => {
-    // Add logic to send the new set data to your backend or update the state in your parent component
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/exercises/"
+        );
+        setExerciseOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleAddSet = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/api/exercises/");
+      setExerciseOptions(response.data);
+    } catch (error) {
+      console.error("Error posting set data:", error);
+    }
     console.log("Adding set:", { reps, weight, selectedExercise });
   };
 
@@ -34,9 +52,22 @@ const AddSet = () => {
         <form>
           <Autocomplete
             options={exerciseOptions}
-            getOptionLabel={(option) => option.name}
+            getOptionLabel={(option) => option.exerciseDetails.name}
             value={selectedExercise}
             onChange={(_, newValue) => setSelectedExercise(newValue)}
+            renderOption={(props, option) => (
+              <li
+                {...props}
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <Avatar
+                  src={option.exerciseDetails.imageURL}
+                  alt={option.exerciseDetails.name}
+                  sx={{ width: "10%", height: "10%", borderRadius: "8px" }}
+                />
+                <span>{option.exerciseDetails.name}</span>
+              </li>
+            )}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -44,11 +75,18 @@ const AddSet = () => {
                 fullWidth
                 margin="normal"
                 variant="outlined"
+                required={true}
                 InputProps={{
                   ...params.InputProps,
                   startAdornment: (
                     <InputAdornment position="start">
-                      {/* You can add a search icon or any other icon here */}
+                      {selectedExercise && (
+                        <Avatar
+                          src={selectedExercise.exerciseDetails.imageURL}
+                          alt={selectedExercise.exerciseDetails.name}
+                          sx={{ width: 24, height: 24, borderRadius: "4px" }}
+                        />
+                      )}
                     </InputAdornment>
                   ),
                 }}
@@ -63,6 +101,7 @@ const AddSet = () => {
             onChange={(e) => setReps(e.target.value)}
             margin="normal"
             variant="outlined"
+            required={true}
           />
           <TextField
             label="Weight (kg)"
@@ -72,7 +111,10 @@ const AddSet = () => {
             onChange={(e) => setWeight(e.target.value)}
             margin="normal"
             variant="outlined"
+            required={false}
+            helperText="Optional" // Add a helper text
           />
+
           <Button
             variant="contained"
             color="primary"
