@@ -43,8 +43,10 @@ const Login = () => {
           email: formData.email,
           password: formData.password,
         });
-        if (response.data.user) setSuccessMessage("Signed up successfully!");
-        else setError(response.data.message);
+        if (response.data.user) {
+          setSuccessMessage("Signed up successfully!");
+          sessionStorage.setItem("token", response.data.token);
+        } else setError(response.data.message);
       } else {
         const response = await axios.post(
           "http://localhost:3000/api/users/authenticate",
@@ -53,14 +55,16 @@ const Login = () => {
             password: formData.password,
           }
         );
-        const user = response.data;
+        const user = response.data.user;
         if (!user) {
-          setError("Invalid email or password. Please try again.");
-        } else {
-          setSuccessMessage("Login successful!");
-          console.log("Login successful. User data:", user);
-          router.push("/AddSetPage");
+          setError(response.data.message);
+          return;
         }
+        setSuccessMessage(response.data.message);
+        sessionStorage.setItem("token", response.data.token);
+
+        console.log("Login successful. User data:", user);
+        router.push("/AddSetPage");
       }
     } catch (error) {
       console.error("Error during form submission:", error);

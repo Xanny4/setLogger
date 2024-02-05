@@ -9,14 +9,18 @@ import {
   InputAdornment,
   Avatar,
 } from "@mui/material";
-
 import axios from "axios";
+import { useRouter } from "next/router";
 
 const AddSet = () => {
+  const router = useRouter();
   const [reps, setReps] = useState("");
   const [weight, setWeight] = useState("");
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [exerciseOptions, setExerciseOptions] = useState([]);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessageOpacity, setSuccessMessageOpacity] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,13 +38,41 @@ const AddSet = () => {
   }, []);
 
   const handleAddSet = async () => {
+    if (!sessionStorage.getItem("token")) {
+      router.push("/LoginPage"); // Redirect to login if not authenticated
+      return;
+    }
     try {
-      const response = await axios.post("http://localhost:3000/api/exercises/");
-      setExerciseOptions(response.data);
+      const response = await axios.post(
+        "http://localhost:3000/api/sets/",
+        {
+          exercise: selectedExercise?._id,
+          reps,
+          weight,
+        },
+        {
+          headers: {
+            authorization: sessionStorage.getItem("token"),
+          },
+        }
+      );
+
+      if (response.status === 201) {
+        setSuccessMessage("Set added successfully!");
+        setShowSuccessMessage(true);
+        setSuccessMessageOpacity(1); // Set initial opacity for transition
+
+        setTimeout(() => {
+          setSuccessMessageOpacity(0); // Fade out after 3 seconds
+        }, 3000);
+      }
     } catch (error) {
+      if (error.response.status === 401) {
+        router.push("/LoginPage");
+        return;
+      }
       console.error("Error posting set data:", error);
     }
-    console.log("Adding set:", { reps, weight, selectedExercise });
   };
 
   return (
@@ -123,6 +155,20 @@ const AddSet = () => {
           >
             Add Set
           </Button>
+          {showSuccessMessage && (
+            <Typography
+              variant="body1"
+              style={{
+                color: "green",
+                marginBottom: "5px",
+                opacity: successMessageOpacity, // Dynamic opacity
+                transition: "opacity 1s ease-out",
+              }}
+              align="center"
+            >
+              {successMessage}
+            </Typography>
+          )}
         </form>
       </Paper>
     </Container>

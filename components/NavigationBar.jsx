@@ -1,8 +1,8 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link } from "next/link";
 
-const NavigationBar = ({ showLoginButton }) => {
+const NavigationBar = () => {
   return (
     <AppBar position="static" style={{ marginBottom: "20px" }}>
       <Toolbar>
@@ -32,11 +32,16 @@ const NavigationBar = ({ showLoginButton }) => {
         <Button color="inherit" component={Link} to="/exercises-profile">
           Exercises Profile
         </Button>
-        {showLoginButton && (
-          <Button color="inherit" component={Link} to="/login">
-            Login
-          </Button>
-        )}
+        <Button
+          color="inherit"
+          onClick={() => {
+            sessionStorage.removeItem("token");
+          }}
+          component={Link}
+          href="/LoginPage"
+        >
+          Sign Out
+        </Button>
       </Toolbar>
     </AppBar>
   );
