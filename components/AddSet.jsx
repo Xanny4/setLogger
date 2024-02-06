@@ -94,6 +94,7 @@ const AddSet = () => {
       }
     } catch (error) {
       if (error.response.status === 401) {
+        if (sessionStorage.getItem("token")) sessionStorage.removeItem("token");
         router.push("/LoginPage");
         return;
       }

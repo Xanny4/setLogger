@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getSets } from "../utils/api";
+import { getSets, getExercises } from "../utils/api";
 import {
   Table,
   TableBody,
@@ -19,18 +19,31 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 const SetsTable = ({ exercise }) => {
-  const [sortCriteria, setSortCriteria] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortCriteria, setSortCriteria] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [exercisesData, setExercisesData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const exercises = await getExercises();
+      setExercisesData(exercises);
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     fetchSets();
   }, [exercise, sortCriteria, sortOrder, startDate, endDate, page]);
+
+  const findExerciseById = (exerciseId) => {
+    return exercisesData.find((exercise) => exercise?._id === exerciseId);
+  };
 
   const fetchSets = async () => {
     setLoading(true);
@@ -53,8 +66,12 @@ const SetsTable = ({ exercise }) => {
   };
 
   const handleSort = (criteria) => {
-    setSortCriteria(criteria);
-    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+    if (sortCriteria === criteria) {
+      setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+    } else {
+      setSortCriteria(criteria);
+      setSortOrder("desc");
+    }
   };
 
   const handlePagination = (event, value) => {
@@ -74,8 +91,8 @@ const SetsTable = ({ exercise }) => {
     return (
       <TableCell
         align="center"
-        onClick={() => handleSort(criteria)}
         style={{ cursor: "pointer" }}
+        onClick={() => handleSort(criteria)}
       >
         <Typography variant="subtitle1">
           {label} {arrowIcon}
@@ -85,77 +102,91 @@ const SetsTable = ({ exercise }) => {
   };
 
   return (
-    <div>
-      <Paper style={{ padding: "10px" }}>
-        <TextField
-          label="Start Date"
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
+    <div style={{ padding: "20px" }}>
+      <Paper style={{ padding: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "10px",
           }}
-          style={{ marginRight: "10px" }}
-        />
-        <TextField
-          label="End Date"
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          style={{ marginRight: "10px" }}
-        />
-        <Button
-          variant="contained"
-          onClick={() => fetchSets()}
-          style={{ marginRight: "10px" }}
         >
-          Apply Filters
-        </Button>
+          <TextField
+            label="Start Date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            style={{ marginRight: "10px" }}
+          />
+          <TextField
+            label="End Date"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            style={{ marginRight: "10px" }}
+          />
+        </div>
       </Paper>
-      <TableContainer
-        component={Paper}
-        style={{ width: "80%", margin: "auto" }}
-      >
-        {loading ? (
-          <CircularProgress style={{ margin: "20px auto" }} />
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                {exercise ? null : <TableCell>Exercise</TableCell>}
-                {renderSortableHeader("Reps", "reps")}
-                {renderSortableHeader("Weight (kg)", "weight")}
-                {renderSortableHeader("Date", "date")}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sets.map((set) => (
-                <TableRow key={set._id}>
-                  {!exercise && (
-                    <TableCell align="center">
-                      <Typography variant="body1">{set.exercise}</Typography>
-                    </TableCell>
-                  )}
-                  <TableCell align="center">
-                    <Typography variant="body1">{set.reps}</Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body1">{set.weight}</Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body1">
-                      {new Date(set.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </TableCell>
+      <div style={{ marginTop: "20px", overflowX: "auto" }}>
+        <TableContainer component={Paper}>
+          {loading ? (
+            <CircularProgress style={{ margin: "20px auto" }} />
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {!exercise && <TableCell>Exercise</TableCell>}
+                  {renderSortableHeader("Reps", "reps")}
+                  {renderSortableHeader("Weight (kg)", "weight")}
+                  {renderSortableHeader("Date", "date")}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+              </TableHead>
+              <TableBody>
+                {sets.map((set) => {
+                  const ex = findExerciseById(set.exercise)?.exerciseDetails;
+                  return (
+                    <TableRow key={set._id}>
+                      {!exercise && (
+                        <TableCell align="center">
+                          <Typography variant="body1">{ex?.name}</Typography>
+                          {ex?.imageURL && (
+                            <img
+                              src={ex?.imageURL}
+                              alt={ex?.name}
+                              style={{ maxWidth: "100px", marginTop: "10px" }}
+                            />
+                          )}
+                        </TableCell>
+                      )}
+                      <TableCell align="center">
+                        <Typography variant="body1">{set.reps}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">{set.weight}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {new Date(set.createdAt).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </TableContainer>
+      </div>
       <div
         style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
       >
