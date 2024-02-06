@@ -8,7 +8,9 @@ import {
   Autocomplete,
   InputAdornment,
   Avatar,
+  Snackbar,
 } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
 import axios from "axios";
 import { useRouter } from "next/router";
 
@@ -21,6 +23,8 @@ const AddSet = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessageOpacity, setSuccessMessageOpacity] = useState(0);
+  const [errorFields, setErrorFields] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,6 +46,25 @@ const AddSet = () => {
       router.push("/LoginPage"); // Redirect to login if not authenticated
       return;
     }
+
+    // Reset errorFields
+    setErrorFields([]);
+
+    // Check for required fields
+    const requiredFields = [];
+    if (!selectedExercise) {
+      requiredFields.push("Exercise");
+    }
+    if (!reps) {
+      requiredFields.push("Reps");
+    }
+
+    if (requiredFields.length > 0) {
+      setErrorFields(requiredFields);
+      setSnackbarOpen(true);
+      return;
+    }
+
     try {
       const response = await axios.post(
         "http://localhost:3000/api/sets/",
@@ -65,6 +88,9 @@ const AddSet = () => {
         setTimeout(() => {
           setSuccessMessageOpacity(0); // Fade out after 3 seconds
         }, 3000);
+
+        // Reset errorFields after successful submission
+        setErrorFields([]);
       }
     } catch (error) {
       if (error.response.status === 401) {
@@ -73,6 +99,10 @@ const AddSet = () => {
       }
       console.error("Error posting set data:", error);
     }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -107,7 +137,8 @@ const AddSet = () => {
                 fullWidth
                 margin="normal"
                 variant="outlined"
-                required={true}
+                required
+                error={errorFields.includes("Exercise")}
                 InputProps={{
                   ...params.InputProps,
                   startAdornment: (
@@ -133,7 +164,8 @@ const AddSet = () => {
             onChange={(e) => setReps(e.target.value)}
             margin="normal"
             variant="outlined"
-            required={true}
+            required
+            error={errorFields.includes("Reps")}
           />
           <TextField
             label="Weight (kg)"
@@ -143,7 +175,6 @@ const AddSet = () => {
             onChange={(e) => setWeight(e.target.value)}
             margin="normal"
             variant="outlined"
-            required={false}
             helperText="Optional" // Add a helper text
           />
 
@@ -170,6 +201,20 @@ const AddSet = () => {
             </Typography>
           )}
         </form>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+        >
+          <MuiAlert
+            elevation={6}
+            variant="filled"
+            onClose={handleSnackbarClose}
+            severity="error"
+          >
+            Please fill in all required fields.
+          </MuiAlert>
+        </Snackbar>
       </Paper>
     </Container>
   );

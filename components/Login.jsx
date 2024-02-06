@@ -233,8 +233,4 @@ const styles = {
   },
 };
 
-// Login.propTypes = {
-//   setToken: PropTypes.func.isRequired,
-// };
-
 export default Login;

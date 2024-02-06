@@ -24,10 +24,10 @@ const NavigationBar = () => {
         <Button
           color="inherit"
           component={Link}
-          to="/recent-sets"
+          href="/YourSetsPage"
           style={{ marginRight: "10px" }}
         >
-          Recent Sets
+          Your Sets
         </Button>
         <Button color="inherit" component={Link} to="/exercises-profile">
           Exercises Profile
