@@ -13,7 +13,7 @@ import {
 import MuiAlert from "@mui/material/Alert";
 import axios from "axios";
 import { useRouter } from "next/router";
-
+import { getExercises } from "../utils/api";
 const AddSet = () => {
   const router = useRouter();
   const [reps, setReps] = useState("");
@@ -28,14 +28,7 @@ const AddSet = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/exercises/"
-        );
-        setExerciseOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+      setExerciseOptions(await getExercises());
     };
 
     fetchData();
@@ -43,14 +36,12 @@ const AddSet = () => {
 
   const handleAddSet = async () => {
     if (!sessionStorage.getItem("token")) {
-      router.push("/LoginPage"); // Redirect to login if not authenticated
+      router.push("/LoginPage");
       return;
     }
 
-    // Reset errorFields
     setErrorFields([]);
 
-    // Check for required fields
     const requiredFields = [];
     if (!selectedExercise) {
       requiredFields.push("Exercise");
@@ -83,13 +74,12 @@ const AddSet = () => {
       if (response.status === 201) {
         setSuccessMessage("Set added successfully!");
         setShowSuccessMessage(true);
-        setSuccessMessageOpacity(1); // Set initial opacity for transition
+        setSuccessMessageOpacity(1);
 
         setTimeout(() => {
-          setSuccessMessageOpacity(0); // Fade out after 3 seconds
+          setSuccessMessageOpacity(0);
         }, 3000);
 
-        // Reset errorFields after successful submission
         setErrorFields([]);
       }
     } catch (error) {
@@ -115,7 +105,7 @@ const AddSet = () => {
         <form>
           <Autocomplete
             options={exerciseOptions}
-            getOptionLabel={(option) => option.exerciseDetails.name}
+            getOptionLabel={(option) => option.name}
             value={selectedExercise}
             onChange={(_, newValue) => setSelectedExercise(newValue)}
             renderOption={(props, option) => (
@@ -124,11 +114,11 @@ const AddSet = () => {
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
                 <Avatar
-                  src={option.exerciseDetails.imageURL}
-                  alt={option.exerciseDetails.name}
+                  src={option.imageURL}
+                  alt={option.name}
                   sx={{ width: "10%", height: "10%", borderRadius: "8px" }}
                 />
-                <span>{option.exerciseDetails.name}</span>
+                <span>{option.name}</span>
               </li>
             )}
             renderInput={(params) => (
@@ -146,8 +136,8 @@ const AddSet = () => {
                     <InputAdornment position="start">
                       {selectedExercise && (
                         <Avatar
-                          src={selectedExercise.exerciseDetails.imageURL}
-                          alt={selectedExercise.exerciseDetails.name}
+                          src={selectedExercise.imageURL}
+                          alt={selectedExercise.name}
                           sx={{ width: 24, height: 24, borderRadius: "4px" }}
                         />
                       )}
@@ -176,7 +166,7 @@ const AddSet = () => {
             onChange={(e) => setWeight(e.target.value)}
             margin="normal"
             variant="outlined"
-            helperText="Optional" // Add a helper text
+            helperText="Optional"
           />
 
           <Button
@@ -193,7 +183,7 @@ const AddSet = () => {
               style={{
                 color: "green",
                 marginBottom: "5px",
-                opacity: successMessageOpacity, // Dynamic opacity
+                opacity: successMessageOpacity,
                 transition: "opacity 1s ease-out",
               }}
               align="center"

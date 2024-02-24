@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getSets, getExercises } from "../utils/api";
+import { getSets, getExercises, deleteSet } from "../utils/api";
 import {
   Table,
   TableBody,
@@ -14,11 +14,15 @@ import {
   TextField,
   IconButton,
   Pagination,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
-const SetsTable = ({ exercise }) => {
+const SetsTable = ({ exercise = "" }) => {
   const [sortCriteria, setSortCriteria] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
   const [sets, setSets] = useState([]);
@@ -28,6 +32,40 @@ const SetsTable = ({ exercise }) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [exercisesData, setExercisesData] = useState([]);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const DeleteButton = ({ set }) => {
+    const [open, setOpen] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+    const handleDelete = async () => {
+      const res = await deleteSet(set);
+      setConfirmDelete(true);
+      setOpen(false);
+    };
+
+    return (
+      <>
+        <Button onClick={handleOpen}>Delete</Button>
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>Delete Set?</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1">
+              Are you sure you want to delete this set?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={handleDelete} color="error">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,12 +77,24 @@ const SetsTable = ({ exercise }) => {
 
   useEffect(() => {
     fetchSets();
-  }, [exercise, sortCriteria, sortOrder, startDate, endDate, page]);
+    setConfirmDelete(false);
+  }, [
+    exercise,
+    sortCriteria,
+    sortOrder,
+    startDate,
+    endDate,
+    page,
+    confirmDelete,
+  ]);
 
   const findExerciseById = (exerciseId) => {
     return exercisesData.find((exercise) => exercise?._id === exerciseId);
   };
 
+  useEffect(() => {
+    setSelectedExercise(findExerciseById(exercise));
+  });
   const fetchSets = async () => {
     setLoading(true);
     try {
@@ -103,6 +153,20 @@ const SetsTable = ({ exercise }) => {
 
   return (
     <div style={{ padding: "20px" }}>
+      {selectedExercise && (
+        <div>
+          <Typography variant="h5" style={{ marginBottom: "10px" }}>
+            {selectedExercise.name}
+          </Typography>
+          {selectedExercise.imageURL && (
+            <img
+              src={selectedExercise.imageURL}
+              alt={selectedExercise.name}
+              style={{ maxWidth: "200px" }}
+            />
+          )}
+        </div>
+      )}
       <Paper style={{ padding: "20px" }}>
         <div
           style={{
@@ -141,15 +205,22 @@ const SetsTable = ({ exercise }) => {
             <Table>
               <TableHead>
                 <TableRow>
-                  {!exercise && <TableCell>Exercise</TableCell>}
+                  {!exercise && (
+                    <TableCell align="center">
+                      <Typography variant="subtitle1">Exercise</Typography>
+                    </TableCell>
+                  )}
                   {renderSortableHeader("Reps", "reps")}
                   {renderSortableHeader("Weight (kg)", "weight")}
-                  {renderSortableHeader("Date", "date")}
+                  {renderSortableHeader("Date", "createdAt")}
+                  <TableCell align="center">
+                    <Typography variant="subtitle1">Actions</Typography>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {sets.map((set) => {
-                  const ex = findExerciseById(set.exercise)?.exerciseDetails;
+                  const ex = findExerciseById(set.exercise);
                   return (
                     <TableRow key={set._id}>
                       {!exercise && (
@@ -178,6 +249,9 @@ const SetsTable = ({ exercise }) => {
                             year: "numeric",
                           })}
                         </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <DeleteButton set={set._id} deleteSet={deleteSet} />
                       </TableCell>
                     </TableRow>
                   );

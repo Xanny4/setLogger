@@ -30,7 +30,7 @@ const Login = () => {
 
     try {
       setError(null);
-      setSuccessMessage(null); // Reset error state on each form submission
+      setSuccessMessage(null);
 
       if (isSignUpMode) {
         console.log("Signup logic here");
@@ -74,7 +74,7 @@ const Login = () => {
 
   const toggleMode = () => {
     setIsSignUpMode((prevMode) => !prevMode);
-    setError(null); // Reset error state when toggling mode
+    setError(null);
     setSuccessMessage(null);
   };
 

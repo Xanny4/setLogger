@@ -6,18 +6,18 @@ import SetsTable from "../components/SetsTable";
 
 const AddSetPage = () => {
   const router = useRouter();
-
+  const { exercise } = router.query;
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (!token) {
-      router.push("/LoginPage"); // Redirect to login if not authenticated
+      router.push("/LoginPage");
     }
-  }, []); // Empty dependency array to run the effect once when the component mounts
+  }, []);
 
   return (
     <>
       <NavigationBar />
-      <SetsTable hasExercise={null} />
+      <SetsTable exercise={exercise} />
     </>
   );
 };

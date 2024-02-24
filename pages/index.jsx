@@ -8,7 +8,7 @@ export default function App() {
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (!token) {
-      router.push("/LoginPage"); // Redirect to login if not authenticated
+      router.push("/LoginPage");
     } else router.push("/AddSetPage");
   }, []);
 }

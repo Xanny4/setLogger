@@ -11,15 +11,22 @@ const NavigationBar = () => {
           component="div"
           sx={{ flexGrow: 1, marginRight: "10px" }}
         >
-          My Fitness App
+          SET LOGGER
         </Typography>
         <Button
           color="inherit"
           component={Link}
-          to="/profile"
+          href="/ProfilePage"
           style={{ marginRight: "10px" }}
         >
           Profile
+        </Button>
+        <Button color="inherit" component={Link} href="/ExercisesPage">
+          Exercises
+        </Button>
+
+        <Button color="inherit" component={Link} href="/AddSetPage">
+          Add Set
         </Button>
         <Button
           color="inherit"
@@ -28,9 +35,6 @@ const NavigationBar = () => {
           style={{ marginRight: "10px" }}
         >
           Your Sets
-        </Button>
-        <Button color="inherit" component={Link} to="/exercises-profile">
-          Exercises Profile
         </Button>
         <Button
           color="inherit"
