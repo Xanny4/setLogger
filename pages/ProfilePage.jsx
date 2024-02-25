@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { React, useEffect, useState } from "react";
+import { React, useEffect } from "react";
 import PersonalDetails from "../components/PersonalDetails";
 import { Container, Paper, Typography } from "@mui/material";
 import NavigationBar from "../components/NavigationBar";

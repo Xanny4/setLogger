@@ -1,6 +1,6 @@
 import Login from "../components/Login";
 import { useRouter } from "next/router";
-import { React, useEffect, useState } from "react";
+import { React, useEffect } from "react";
 
 const LoginPage = () => {
   const router = useRouter();

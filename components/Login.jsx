@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Container, Paper, Typography, TextField, Button } from "@mui/material";
 import { useRouter } from "next/router";
@@ -15,6 +15,10 @@ const Login = () => {
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  useEffect(() => {
+    setIsSignUpMode(false);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

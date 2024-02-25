@@ -110,15 +110,25 @@ const ExercisesPage = () => {
             />
           </Box>
         </Box>
-        <Box display="flex" flexWrap="wrap" gap={2}>
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          gap={1}
+          justifyContent="center" // Aligns the cards to the center of the container
+        >
           {filteredExercises.map((exercise) => (
-            <ExerciseCard
+            <Box
               key={exercise._id}
-              exerciseId={exercise._id}
-              name={exercise.name}
-              imageUrl={exercise.imageURL}
-              onclick={() => handleExerciseClick(exercise._id)}
-            />
+              width={(1 / 5) * 100 + "%"} // Set a width that is 1/5th of the container's width
+              style={{ margin: "0.5rem", padding: "0.5rem" }}
+            >
+              <ExerciseCard
+                exerciseId={exercise._id}
+                name={exercise.name}
+                imageUrl={exercise.imageURL}
+                onclick={() => handleExerciseClick(exercise._id)}
+              />
+            </Box>
           ))}
         </Box>
       </Container>

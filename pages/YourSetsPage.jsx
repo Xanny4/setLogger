@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import AddSet from "../components/AddSet";
 import NavigationBar from "../components/NavigationBar";
 import { useRouter } from "next/router";
 import SetsTable from "../components/SetsTable";

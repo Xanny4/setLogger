@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Avatar,
   Paper,
   Box,
   FormHelperText,
